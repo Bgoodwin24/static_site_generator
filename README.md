@@ -1,1 +1,1 @@
-# static_site_generator
+Static site generator is my third Boot.dev project!
