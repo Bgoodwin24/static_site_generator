@@ -35,7 +35,6 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode(tag=tag)
         self.assertEqual(node.tag, tag)
     
-
     def test_value(self):
         value = "Hello, world!"
         node = HTMLNode(value=value)
