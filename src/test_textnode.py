@@ -1,6 +1,5 @@
 import unittest
 
-from split_nodes_delimiter import *
 from htmlnode import LeafNode
 from textnode import (
     TextNode,
@@ -92,113 +91,6 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(result.value, "")
         self.assertEqual(result.props, {"src": text_node.url, "alt": text_node.text})
 
-class TestSplitDelimiter(unittest.TestCase):
-    def test_text_basic(self):
-        node = [TextNode("This is text", text_type_text)]
-        expected = [TextNode("This is text", text_type_text)]
-        self.assertListEqual(node, expected)
-
-    def test_text_bold(self):
-        node = TextNode("This is **bold** text", text_type_text)
-        result = split_nodes_delimiter([node], "**", text_type_bold)
-        expected = [
-              TextNode("This is ", text_type_text),
-              TextNode("bold", text_type_bold),
-              TextNode(" text", text_type_text),
-        ]
-        self.assertListEqual(result, expected)
-
-    def test_text_italic(self):
-        node = TextNode("This is *italic* text", text_type_text)
-        result = split_nodes_delimiter([node], "*", text_type_italic)
-        expected = [
-              TextNode("This is ", text_type_text),
-              TextNode("italic", text_type_italic),
-              TextNode(" text", text_type_text),
-        ]
-        self.assertListEqual(result, expected)
-
-    def test_text_code(self):
-        node = TextNode("This is `code` text", text_type_text)
-        result = split_nodes_delimiter([node], "`", text_type_code)
-        expected = [
-              TextNode("This is ", text_type_text),
-              TextNode("code", text_type_code),
-              TextNode(" text", text_type_text),
-        ]
-        self.assertListEqual(result, expected)
-
-    #def test_text_link(self):
-        #node = "This is [link] text", text_type_text
-        #result = split_nodes_delimiter([node], "()", text_type_link)
-        #expected = [
-                #TextNode("This is ", text_type_text),
-                #TextNode("link", text_type_link),
-                #TextNode(" text", text_type_text),
-        #]
-        #self.assertListEqual(node, expected)
-
-    #def test_text_image(self):
-         #node = "This is ![image](https://www.boot.dev) text", text_type_text
-         #result = split_nodes_delimiter([node], "![]()", text_type_image)
-         #expected = [
-                # TextNode("This is , text_type_text"),
-                # TextNode("image", text_type_image),
-                # TextNode(" text", text_type_text),
-                #]
-         #self.assertListEqual(node, expected)
-
-    def test_unmatched_delimiter(self):
-        node = TextNode("This is unmatched **bold text", text_type_text)
-        delimiter = "**"
-        with self.assertRaises(ValueError) as context:
-            split_nodes_delimiter([node], "**", text_type_bold)
-
-        expected_message = f"Invalid Markdown Syntax: Missing closing delimiter for '{delimiter}'"
-        self.assertEqual(str(context.exception), expected_message)
-
-    def test_text_bold_and_italic(self):
-        node = TextNode("**bold** and *italic*", text_type_text)
-        new_nodes = split_nodes_delimiter([node], "**", text_type_bold)
-        new_nodes = split_nodes_delimiter(new_nodes, "*", text_type_italic)
-        self.assertListEqual(
-            [
-               TextNode("bold", text_type_bold),
-               TextNode(" and ", text_type_text),
-               TextNode("italic", text_type_italic),
-            ],
-            new_nodes,
-         )
-    
-    def test_text_bold_double(self):
-        node = TextNode(
-             "This is text with a **bolded** word and **another**", text_type_text
-        )
-        new_nodes = split_nodes_delimiter([node], "**", text_type_bold)
-        self.assertListEqual(
-             [
-                TextNode("This is text with a ", text_type_text),
-                TextNode("bolded", text_type_bold),
-                TextNode(" word and ", text_type_text),
-                TextNode("another", text_type_bold),
-             ],
-             new_nodes,
-        )
-
-    def test_text_bold_multiword(self):
-        node = TextNode(
-             "This is text with a **bolded word** and **another**", text_type_text
-        )
-        new_nodes = split_nodes_delimiter([node], "**", text_type_bold)
-        self.assertListEqual(
-            [
-                TextNode("This is text with a ", text_type_text),
-                TextNode("bolded word", text_type_bold),
-                TextNode(" and ", text_type_text),
-                TextNode("another", text_type_bold),
-            ],
-            new_nodes,
-        )
 
 if __name__ == "__main__":
 	unittest.main(exit=False)
