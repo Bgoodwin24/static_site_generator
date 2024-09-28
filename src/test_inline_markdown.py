@@ -38,26 +38,6 @@ class TestSplitDelimiter(unittest.TestCase):
         ]
         self.assertListEqual(result, expected)
 
-    #def test_text_link(self):
-        #node = "This is [link] text", text_type_text
-        #result = split_nodes_delimiter([node], "()", text_type_link)
-        #expected = [
-                #TextNode("This is ", text_type_text),
-                #TextNode("link", text_type_link),
-                #TextNode(" text", text_type_text),
-        #]
-        #self.assertListEqual(node, expected)
-
-    #def test_text_image(self):
-         #node = "This is ![image](https://www.boot.dev) text", text_type_text
-         #result = split_nodes_delimiter([node], "![]()", text_type_image)
-         #expected = [
-                # TextNode("This is , text_type_text"),
-                # TextNode("image", text_type_image),
-                # TextNode(" text", text_type_text),
-                #]
-         #self.assertListEqual(node, expected)
-
     def test_unmatched_delimiter(self):
         node = TextNode("This is unmatched **bold text", text_type_text)
         delimiter = "**"
@@ -173,15 +153,14 @@ class TestExtractors(unittest.TestCase):
         self.assertEqual(extract, expected)
 
 class TestSplitImagesAndLinks(unittest.TestCase):
-    def test_split_nodes_image(self):
-        #No images
+    def test_split_nodes_no_image(self):
         node = TextNode("This is text without images", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 1
         assert result[0].text == "This is text without images"
         assert result[0].text_type == text_type_text
 
-        #One image at start
+    def test_image_at_start(self):
         node = TextNode("![alt](url) This is text", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 2
@@ -191,7 +170,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == " This is text"
         assert result[1].text_type == text_type_text
 
-        #One image at end
+    def test_image_at_end(self):
         node = TextNode("This is text ![alt](url)", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 2
@@ -201,7 +180,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text_type == text_type_image
         assert result[1].url == "url"
 
-        #Multiple images
+    def test_multi_images(self):
         node = TextNode("![alt](url) text ![alt2](url2)", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 3
@@ -214,7 +193,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[2].text_type == text_type_image
         assert result[2].url == "url2"
 
-        #Text before, between, and after images
+    def test_text_around_image(self):
         node = TextNode("Start ![alt](url) middle ![alt2](url2) end", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 5
@@ -231,7 +210,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[4].text == " end"
         assert result[4].text_type == text_type_text
 
-        #Empty alt text
+    def test_empty_alt_text(self):
         node = TextNode("![](url) text", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 2
@@ -241,7 +220,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == " text"
         assert result[1].text_type == text_type_text
 
-        #Special characters in url
+    def test_special_chars_in_url(self):
         node = TextNode("![alt](!`*) text", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 2
@@ -251,7 +230,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == " text"
         assert result[1].text_type == text_type_text
 
-        #Multiple images no text
+    def test_multi_images_no_text(self):
         node = TextNode("![alt](url)![alt2](url2)", text_type_text)
         result = split_nodes_image([node])
         assert len(result) == 2
@@ -262,16 +241,33 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text_type == text_type_image
         assert result[1].url == "url2"
 
+    def test_image_raises_error(self):
+        with self.assertRaises(ValueError) as context:
+            split_nodes_image([TextNode("[alt(url) text", text_type_text)])
 
-    def test_split_nodes_link(self):
-        #No link
+        self.assertEqual(
+            str(context.exception),
+            "Invalid markdown, image section not closed"
+        )
+
+    def test_link_raises_error(self):
+        with self.assertRaises(ValueError) as context:
+            split_nodes_link([TextNode("![anchor](url text", text_type_text)])
+
+        self.assertEqual(
+            str(context.exception),
+            "Invalid markdown, link section not closed"
+        )
+
+
+    def test_split_nodes_no_link(self):
         node = TextNode("This is text without links", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 1
         assert result[0].text == "This is text without links"
         assert result[0].text_type == text_type_text
 
-        #One link at start
+    def test_link_at_start(self):
         node = TextNode("[anchor](url) This is text", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 2
@@ -281,7 +277,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == " This is text"
         assert result[1].text_type == text_type_text
 
-        #One link at end
+    def test_link_at_end(self):
         node = TextNode("This is text [anchor](url)", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 2
@@ -291,7 +287,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text_type == text_type_link
         assert result[1].url == "url"
 
-        #Multiple links
+    def test_multi_links(self):
         node = TextNode("[anchor](url) text [anchor2](url2)", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 3
@@ -304,7 +300,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[2].text_type == text_type_link
         assert result[2].url == "url2"
 
-        #Text before, between, and after link
+    def test_text_around_link(self):
         node = TextNode("Start [anchor](url) middle [anchor2](url2) end", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 5
@@ -321,7 +317,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[4].text == " end"
         assert result[4].text_type == text_type_text
 
-        #Empty anchor text
+    def test_empty_anchor(self):
         node = TextNode("[](url) text", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 2
@@ -331,7 +327,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == " text"
         assert result[1].text_type == text_type_text
 
-        #Special characters in anchor text
+    def test_special_chars_in_anchor(self):
         node = TextNode("[!`*](url) text", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 2
@@ -341,7 +337,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == " text"
         assert result[1].text_type == text_type_text
 
-        #Special characters in url
+    def test_special_chars_in_url(self):
         node = TextNode("[anchor](!`*) text", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 2
@@ -351,7 +347,7 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == " text"
         assert result[1].text_type == text_type_text
 
-        #Multiple links no text
+    def test_multi_links_no_text(self):
         node = TextNode("[anchor](url)[anchor2](url2)", text_type_text)
         result = split_nodes_link([node])
         assert len(result) == 2
@@ -361,6 +357,61 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == "anchor2"
         assert result[1].text_type == text_type_link
         assert result[1].url == "url2"
+
+    def test_raises_error(self):
+        node = TextNode("![alt(url) text", text_type_text)
+        with self.assertRaises(ValueError):
+            split_nodes_image([node])
+
+class TestTexttoTextNode(unittest.TestCase):
+    def test_multi_markdown(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        result = text_to_textnodes(text)
+        expected = [
+        TextNode("This is ", text_type_text),
+        TextNode("text", text_type_bold),
+        TextNode(" with an ", text_type_text),
+        TextNode("italic", text_type_italic),
+        TextNode(" word and a ", text_type_text),
+        TextNode("code block", text_type_code),
+        TextNode(" and an ", text_type_text),
+        TextNode("obi wan image", text_type_image, "https://i.imgur.com/fJRm4Vk.jpeg"),
+        TextNode(" and a ", text_type_text),
+        TextNode("link", text_type_link, "https://boot.dev"),
+    ]
+        self.assertEqual(result, expected)
+
+    def test_all_bold(self):
+        text = "**bold** **bolder**"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("bold", text_type_bold),
+            TextNode(" ", text_type_text),
+            TextNode("bolder", text_type_bold),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_bold_and_italic(self):
+        text = "**bold** *italic*"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("bold", text_type_bold),
+            TextNode(" ", text_type_text),
+            TextNode("italic", text_type_italic),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_mixed_markdown_and_text(self):
+        text = "Start **bold** mid *italic* end"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("Start ", text_type_text),
+            TextNode("bold", text_type_bold),
+            TextNode(" mid ", text_type_text),
+            TextNode("italic", text_type_italic),
+            TextNode(" end", text_type_text),
+        ]
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
