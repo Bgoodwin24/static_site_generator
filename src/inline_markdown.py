@@ -11,22 +11,30 @@ from textnode import (
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
+    split_nodes = []
+    list_item = "* "
     for old_node in old_nodes:
+        split_nodes = []
         if old_node.text_type != text_type_text:
             new_nodes.append(old_node)
             continue
-        split_nodes = []
-        sections = old_node.text.split(delimiter)
-        if len(sections) % 2 == 0:
+
+        if delimiter == list_item and old_node.text.startswith(delimiter):
+            list_content = old_node.text[2:]
+            split_nodes.append(TextNode(list_content, text_type_text))
+        else:
+            sections = old_node.text.split(delimiter)
+
+        if delimiter != list_item and len(sections) % 2 == 0:
             raise ValueError(f"Invalid Markdown Syntax: Missing closing delimiter for '{delimiter}'")
             
         for i in range(len(sections)):
             if sections[i] == "":
                 continue
-            if i % 2 == 0:
-                split_nodes.append(TextNode(sections[i], text_type_text))
-            else:
+            if i % 2 != 0:
                 split_nodes.append(TextNode(sections[i], text_type))
+            else:
+                split_nodes.append(TextNode(sections[i], text_type_text))
         new_nodes.extend(split_nodes)
     return new_nodes
 

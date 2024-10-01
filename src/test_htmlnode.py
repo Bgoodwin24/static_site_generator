@@ -87,8 +87,8 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(expected, repr(node))
 
     def test_HTMLNode_no_tag(self):
-        node = HTMLNode(tag=None, value="Hello, world!", props={"key": "href", "value": "target"})
-        expected = "HTMLNode(None, Hello, world!, children=None, {'key': 'href', 'value': 'target'})"
+        node = HTMLNode(tag=None, value="Hello, world!", children=[],props={"key": "href", "value": "target"})
+        expected = "HTMLNode(None, Hello, world!, children=[], {'key': 'href', 'value': 'target'})"
         self.assertEqual(expected, repr(node))
 
     
@@ -195,9 +195,9 @@ class TestParentNode(unittest.TestCase):
 
     def test_repr(self):
         node = ParentNode(tag="p", children=f"{self.children}", props={"key": "href", "value": "target"})
-        expected = "ParentNode(p, children=[LeafNode(b, Bold text, None), LeafNode(i, italic text, None)], {'key': 'href', 'value': 'target'})"
+        expected = "ParentNode(p, children=[LeafNode(b, Bold text, {}), LeafNode(i, italic text, {})], {'key': 'href', 'value': 'target'})"
         self.assertEqual(expected, repr(node))
 
 
 if __name__ == "__main__":
-	unittest.main()
+	unittest.main(exit=False)
