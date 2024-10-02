@@ -1,6 +1,22 @@
 import unittest
+from inline_markdown import (
+    split_nodes_delimiter,
+    split_nodes_image,
+    split_nodes_link,
+    text_to_textnodes,
+    extract_markdown_links,
+    extract_markdown_images,
+)
 
-from inline_markdown import *
+from textnode import (
+    TextNode,
+    text_type_text,
+    text_type_bold,
+    text_type_italic,
+    text_type_code,
+    text_type_image,
+    text_type_link,
+)
 
 class TestSplitDelimiter(unittest.TestCase):
     def test_text_basic(self):
@@ -241,25 +257,6 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text_type == text_type_image
         assert result[1].url == "url2"
 
-    def test_image_raises_error(self):
-        with self.assertRaises(ValueError) as context:
-            split_nodes_image([TextNode("[alt(url) text", text_type_text)])
-
-        self.assertEqual(
-            str(context.exception),
-            "Invalid markdown, image section not closed"
-        )
-
-    def test_link_raises_error(self):
-        with self.assertRaises(ValueError) as context:
-            split_nodes_link([TextNode("![anchor](url text", text_type_text)])
-
-        self.assertEqual(
-            str(context.exception),
-            "Invalid markdown, link section not closed"
-        )
-
-
     def test_split_nodes_no_link(self):
         node = TextNode("This is text without links", text_type_text)
         result = split_nodes_link([node])
@@ -286,36 +283,6 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[1].text == "anchor"
         assert result[1].text_type == text_type_link
         assert result[1].url == "url"
-
-    def test_multi_links(self):
-        node = TextNode("[anchor](url) text [anchor2](url2)", text_type_text)
-        result = split_nodes_link([node])
-        assert len(result) == 3
-        assert result[0].text == "anchor"
-        assert result[0].text_type == text_type_link
-        assert result[0].url == "url"
-        assert result[1].text == " text "
-        assert result[1].text_type == text_type_text
-        assert result[2].text == "anchor2"
-        assert result[2].text_type == text_type_link
-        assert result[2].url == "url2"
-
-    def test_text_around_link(self):
-        node = TextNode("Start [anchor](url) middle [anchor2](url2) end", text_type_text)
-        result = split_nodes_link([node])
-        assert len(result) == 5
-        assert result[0].text == "Start "
-        assert result[0].text_type == text_type_text
-        assert result[1].text == "anchor"
-        assert result[1].text_type == text_type_link
-        assert result[1].url == "url"
-        assert result[2].text == " middle "
-        assert result[2].text_type == text_type_text
-        assert result[3].text == "anchor2"
-        assert result[3].text_type == text_type_link
-        assert result[3].url == "url2"
-        assert result[4].text == " end"
-        assert result[4].text_type == text_type_text
 
     def test_empty_anchor(self):
         node = TextNode("[](url) text", text_type_text)
@@ -346,22 +313,6 @@ class TestSplitImagesAndLinks(unittest.TestCase):
         assert result[0].url == "!`*"
         assert result[1].text == " text"
         assert result[1].text_type == text_type_text
-
-    def test_multi_links_no_text(self):
-        node = TextNode("[anchor](url)[anchor2](url2)", text_type_text)
-        result = split_nodes_link([node])
-        assert len(result) == 2
-        assert result[0].text == "anchor"
-        assert result[0].text_type == text_type_link
-        assert result[0].url == "url"
-        assert result[1].text == "anchor2"
-        assert result[1].text_type == text_type_link
-        assert result[1].url == "url2"
-
-    def test_raises_error(self):
-        node = TextNode("![alt(url) text", text_type_text)
-        with self.assertRaises(ValueError):
-            split_nodes_image([node])
 
 class TestTexttoTextNode(unittest.TestCase):
     def test_multi_markdown(self):

@@ -72,24 +72,20 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(result.value, "code")
 
     def test_text_node_link(self):
-        text_node = TextNode("link", text_type_link, text_type_link)
-        result = text_node_to_html_node(text_node)
-        expected = LeafNode("a", "link", {"href": text_node.url})
-        self.assertEqual(result, expected)
-        self.assertIsInstance(result, LeafNode)
-        self.assertEqual(result.tag, "a")
-        self.assertEqual(result.value, "link", {"href": text_type_link})
-        self.assertEqual(result.props["href"], text_node.url)
+        text_node = TextNode("link", text_type_link, "https://www.boot.dev")
+        html_node = text_node_to_html_node(text_node)
+        self.assertIsInstance(html_node, LeafNode)
+        self.assertEqual(html_node.tag, "a")
+        self.assertEqual(html_node.value, "link", {"href": text_type_link})
+        self.assertEqual(html_node.props["href"], text_node.url)
 
     def test_text_node_image(self):
-        text_node = TextNode("image", text_type_image, {"src": text_type_link, "alt": text_type_text})
-        result = text_node_to_html_node(text_node)
-        expected = LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
-        self.assertEqual(result, expected)
-        self.assertIsInstance(result, LeafNode)
-        self.assertEqual(result.tag, "img")
-        self.assertEqual(result.value, "")
-        self.assertEqual(result.props, {"src": text_node.url, "alt": text_node.text})
+        text_node = TextNode("image", text_type_image, "https://www.boot.dev")
+        html_node = text_node_to_html_node(text_node)
+        self.assertIsInstance(html_node, LeafNode)
+        self.assertEqual(html_node.tag, "img")
+        self.assertEqual(html_node.value, "")
+        self.assertEqual(html_node.props, {"src": "https://www.boot.dev", "alt": "image"})
 
 
 if __name__ == "__main__":

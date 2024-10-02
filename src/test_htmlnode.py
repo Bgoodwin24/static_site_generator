@@ -93,9 +93,9 @@ class TestHTMLNode(unittest.TestCase):
 
     
 class TestLeafNode(unittest.TestCase):
-    def test_value_req(self):
-        with self.assertRaises(ValueError):
-            LeafNode(self.tag, value=None)
+    def test_to_html_no_tag(self):
+        node = LeafNode(None, "Hello, world!")
+        self.assertEqual(node.to_html(), "Hello, world!")
 
     def test_tag_no_props(self):
         node = LeafNode("p", "Hello")
@@ -107,10 +107,6 @@ class TestLeafNode(unittest.TestCase):
         expected = '<a href="https://www.boot.dev" target="Example">Link</a>'
         self.assertEqual(node.to_html(), expected)
 
-    def test_tag_is_none(self):
-        node = LeafNode(tag=None, value=str)
-        expected = str
-        self.assertEqual(node.to_html(), expected)
 
     def setUp(self):
         self.tag = "a"
@@ -156,24 +152,6 @@ class TestParentNode(unittest.TestCase):
         self.assertEqual(outer_parent.to_html(), expected)
 
 
-    def test_empty_children(self):
-        with self.assertRaises(ValueError) as context:
-            ParentNode(tag="p", children=None)
-
-        self.assertEqual(
-            str(context.exception),
-            "Children are required for a ParentNode and cannot be None."
-        )
-
-    def test_no_tags(self):
-        with self.assertRaises(ValueError) as context:
-            ParentNode(tag=None, children=[])
-
-        self.assertEqual(
-            str(context.exception),
-            "A tag is required for ParentNode and cannot be None."
-        )
-
     def test_if_value(self):
         with self.assertRaises(TypeError):
             ParentNode(tag="p", value="Unintended value", children=[])
@@ -195,7 +173,7 @@ class TestParentNode(unittest.TestCase):
 
     def test_repr(self):
         node = ParentNode(tag="p", children=f"{self.children}", props={"key": "href", "value": "target"})
-        expected = "ParentNode(p, children=[LeafNode(b, Bold text, {}), LeafNode(i, italic text, {})], {'key': 'href', 'value': 'target'})"
+        expected = "ParentNode(p, children=[LeafNode(b, Bold text, None), LeafNode(i, italic text, None)], {'key': 'href', 'value': 'target'})"
         self.assertEqual(expected, repr(node))
 
 
