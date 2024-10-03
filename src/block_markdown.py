@@ -2,6 +2,7 @@ from htmlnode import ParentNode
 from inline_markdown import text_to_textnodes
 from textnode import text_node_to_html_node
 
+
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
 block_type_code = "code"

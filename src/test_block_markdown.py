@@ -4,6 +4,7 @@ from block_markdown import (
     markdown_to_html_node,
     markdown_to_blocks,
     block_to_block_type,
+    extract_title,
     block_type_paragraph,
     block_type_heading,
     block_type_code,
@@ -169,6 +170,34 @@ this is paragraph text
             html,
             "<div><blockquote>This is a blockquote block</blockquote><p>this is paragraph text</p></div>",
         )
+
+    def test_codeblock(self):
+        md = """
+```
+This is a code block
+```
+
+this is paragraph text
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is a code block\n</code></pre><p>this is paragraph text</p></div>",
+        )
+    def test_extract_title(self):
+        title = "# Hello"
+        extract = extract_title(title)
+        expected = "Hello"
+        self.assertEqual(extract, expected)
+
+    def test_extract_multi_titles(self):
+        title = "# Hello\n\n## Hello x2\n\n### Hello x3\n\n#### Hello x4\n\n##### Hello x5\n\n###### Hello x6"
+        extract = extract_title(title)
+        expected = "Hello\nHello x2\nHello x3\nHello x4\nHello x5\nHello x6"
+        self.assertEqual(extract, expected)
 
 
 if __name__ == "__main__":
