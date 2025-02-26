@@ -40,6 +40,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
 def extract_title(md):
     lines = md.split("\n")
     for line in lines:
-        if line.startswith("# "):
-            return line[2:]
+        line = line.strip()
+        if line.startswith("#"):
+            return line.lstrip("#").strip()
     raise Exception("No title found")
